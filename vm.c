@@ -472,13 +472,7 @@ int main(int argc, char **argv)
 	
 	VM_Execute(vm);
 	
-	//VM_Exit(vm);
-	
-	//int pos = INS_type(inss, &type);
-	//if(type)
-	{
-	//	Execute(inss, type, pos, &regs);
-	}
+	VM_Exit(vm);
 	
 	return 0;
 }

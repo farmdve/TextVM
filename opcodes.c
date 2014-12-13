@@ -16,17 +16,13 @@ void opcode_mov(VM *vm, struct _Instruction *instruction)
 	if(instruction->isImm)
 	{
 		if(instruction->sign)
-		{
 			regDest->s += instruction->imm.s;
-		}
 		else
-		{
 			regDest->u += instruction->imm.u;
-		}
 	}
 	else
 	{
-		//if(
+		
 	}
 }
 
@@ -38,13 +34,9 @@ void opcode_add(VM *vm, struct _Instruction *instruction)
 	if(instruction->isImm)
 	{
 		if(instruction->sign)
-		{
 			regDest->s += instruction->imm.s;
-		}
 		else
-		{
 			regDest->u += instruction->imm.u;
-		}
 	}
 }
 
@@ -56,13 +48,9 @@ void opcode_sub(VM *vm, struct _Instruction *instruction)
 	if(instruction->isImm)
 	{
 		if(instruction->sign)
-		{
 			regDest->s += instruction->imm.s;
-		}
 		else
-		{
 			regDest->u += instruction->imm.u;
-		}
 	}
 }
 
@@ -74,13 +62,9 @@ void opcode_div(VM *vm, struct _Instruction *instruction)
 	if(instruction->isImm)
 	{
 		if(instruction->sign)
-		{
 			regDest->s += instruction->imm.s;
-		}
 		else
-		{
 			regDest->u += instruction->imm.u;
-		}
 	}
 }
 
