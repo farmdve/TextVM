@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <assert.h>
 
 #include <string.h>
 
@@ -122,5 +121,8 @@ typedef struct _VMContext {
 	struct _Instruction *instruction;
 	int nInstructions;
 } VM;
+
+#include "opcodes.h"
+#include "parser.h"
 
 #endif
