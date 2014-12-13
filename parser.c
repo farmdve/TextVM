@@ -287,7 +287,7 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 	{
 		int sign = 0;
 		sscanf(buf, "%x", &sign);
-		if((sign & (1 << 8)))
+		if(sign < 0)
 		{
 			vm->instruction[instr].sign = true;
 			vm->instruction[instr].imm.s = sign;
