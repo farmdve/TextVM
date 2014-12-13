@@ -290,7 +290,7 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 		if(sign < 0)
 		{
 			vm->instruction[instr].sign = true;
-			vm->instruction[instr].imm.s = sign;
+			vm->instruction[instr].imm.s = strtol(buf, NULL, 16);
 		}
 		else
 		{
