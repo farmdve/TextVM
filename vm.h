@@ -1,11 +1,12 @@
 #ifndef VM_H
 #define VM_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <string.h>
+#include <strings.h>
 
 enum {
 	NOP_INSTRUCTION = 0,
@@ -13,7 +14,8 @@ enum {
 	ADD_INSTRUCTION = 2,
 	SUB_INSTRUCTION = 3,
 	MUL_INSTRUCTION = 4,
-	DIV_INSTRUCTION = 5
+	DIV_INSTRUCTION = 5,
+	XOR_INSTRUCTION = 6
 };
 
 enum {
@@ -43,53 +45,15 @@ enum {
 	REG_BL = 24
 };
 
-union EAX {
-	unsigned int u;
-	int s;
-};
-union ECX {
-	unsigned int u;
-	int s;
-};
-union EDX {
-	unsigned int u;
-	int s;
-};
-union EBX {
-	unsigned int u;
-	int s;
-};
-union ESP {
-	unsigned int u;
-	int s;
-};
-union EBP {
-	unsigned int u;
-	int s;
-} ;
-union ESI {
-	unsigned int u;
-	int s;
-};
-union EDI {
-	unsigned int u;
-	int s;
-};
-
-union Template {
-	unsigned int u;
-	int s;
-} Template;
-
 typedef struct _VMREGS {
-	union EAX EAX;
-	union ECX ECX;
-	union EDX EDX;
-	union EBX EBX;
-	union ESP ESP;
-	union EBP EBP;
-	union ESI ESI;
-	union EDI EDI;
+	unsigned int EAX;
+	unsigned int ECX;
+	unsigned int EDX;
+	unsigned int EBX;
+	unsigned int ESP;
+	unsigned int EBP;
+	unsigned int ESI;
+	unsigned int EDI;
 	
 	unsigned int EIP;
 
@@ -99,10 +63,8 @@ typedef struct _VMREGS {
 struct _Instruction {
 
 	int type;
-	union {
-		unsigned int u;
-		signed int s;
-	} imm;
+	int size;
+	unsigned int imm;
 	bool isRegisterDest;
 	bool isPointerDest;
 	bool isRegisterSrc;
@@ -113,7 +75,23 @@ struct _Instruction {
 	int regmodSrc;
 	int regmodDest;
 	bool isImm;
-	bool sign;
+};
+
+struct instruction_table {
+
+	int type;
+	char *ins;
+	void (*opcode)();
+
+};
+
+struct register_table {
+
+	int type;
+	char *reg;
+	int size;
+	void *pReg;
+	char padding[3];
 };
 
 typedef struct _VMContext {
@@ -121,6 +99,9 @@ typedef struct _VMContext {
 	struct _Instruction *instruction;
 	int nInstructions;
 } VM;
+
+
+extern VM *vm;
 
 #include "opcodes.h"
 #include "parser.h"

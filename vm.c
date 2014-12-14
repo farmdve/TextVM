@@ -3,12 +3,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
-
 #include <string.h>
+
+
+#define _MSC_VER 1600
 
 #include "vm.h"
 
-const char *inss = "mov eax,FFFFFF85\nadd eax,2";
+VM *vm;
+const char *inss = "mov eax,FFFFFF85\nadd eax,7a\nxor eax,5";
 
 VM *VM_Init()
 {
@@ -37,7 +40,7 @@ void VM_Exit(VM *vm)
 	}
 }
 
-void VM_Parse(VM *vm, const char *disasm)
+void VM_Prepare(VM *vm, const char *disasm)
 {
 	INS_parse(vm, disasm);
 }
@@ -50,7 +53,7 @@ void VM_Execute(VM *vm)
 		vm->instruction[instr].handler(vm, &vm->instruction[instr]);
 	}
 	
-	printf("EAX %08x\n", vm->regs.EAX);
+	printf("EAX %08x,%lu,%d\n", vm->regs.EAX, vm->regs.EAX, vm->regs.EAX);
 	printf("ECX %08x\n", vm->regs.ECX);
 	printf("EDX %08x\n", vm->regs.EDX);
 	printf("EBX %08x\n", vm->regs.EBX);
@@ -60,12 +63,11 @@ void VM_Execute(VM *vm)
 
 int main(int argc, char **argv)
 {
-	VM *vm;
 	vm = VM_Init();
 	if(!vm)
 		return 0;
 
-	VM_Parse(vm, inss);
+	VM_Prepare(vm, inss);
 	
 	VM_Execute(vm);
 	

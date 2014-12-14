@@ -7,17 +7,16 @@
 
 #include "vm.h"
 
+
+
 void opcode_mov(VM *vm, struct _Instruction *instruction)
 {
-	union Template *regDest = (union Template *)instruction->regDest;
-	union Template *regSrc = (union Template *)instruction->regSrc;
+	unsigned int *regDest = (unsigned int *)instruction->regDest;
+	//unsigned int *regSrc = (unsigned int *)instruction->regSrc;
 	
 	if(instruction->isImm)
 	{
-		if(instruction->sign)
-			regDest->s += instruction->imm.s;
-		else
-			regDest->u += instruction->imm.u;
+		*regDest += instruction->imm;
 	}
 	else
 	{
@@ -27,44 +26,46 @@ void opcode_mov(VM *vm, struct _Instruction *instruction)
 
 void opcode_add(VM *vm, struct _Instruction *instruction)
 {
-	union Template *regDest = (union Template *)instruction->regDest;
-	union Template *regSrc = (union Template *)instruction->regSrc;
+	unsigned int *regDest = (unsigned int *)instruction->regDest;
+	//unsigned int *regSrc = (unsigned int *)instruction->regSrc;
 	
 	if(instruction->isImm)
 	{
-		if(instruction->sign)
-			regDest->s += instruction->imm.s;
-		else
-			regDest->u += instruction->imm.u;
+		*regDest += instruction->imm;
 	}
 }
 
 void opcode_sub(VM *vm, struct _Instruction *instruction)
 {
-	union Template *regDest = (union Template *)instruction->regDest;
-	union Template *regSrc = (union Template *)instruction->regSrc;
+	unsigned int *regDest = (unsigned int *)instruction->regDest;
+	//unsigned int *regSrc = (unsigned int *)instruction->regSrc;
 	
 	if(instruction->isImm)
 	{
-		if(instruction->sign)
-			regDest->s += instruction->imm.s;
-		else
-			regDest->u += instruction->imm.u;
+		*regDest += instruction->imm;
 	}
 }
 
 void opcode_div(VM *vm, struct _Instruction *instruction)
 {
-	union Template *regDest = (union Template *)instruction->regDest;
-	union Template *regSrc = (union Template *)instruction->regSrc;
+	unsigned int *regDest = (unsigned int *)instruction->regDest;
+	//unsigned int *regSrc = (unsigned int *)instruction->regSrc;
 	
 	if(instruction->isImm)
 	{
-		if(instruction->sign)
-			regDest->s += instruction->imm.s;
-		else
-			regDest->u += instruction->imm.u;
+		*regDest += instruction->imm;
 	}
+}
+
+void opcode_xor(VM *vm, struct _Instruction *instruction)
+{
+	unsigned int *regDest = (unsigned int *)instruction->regDest;
+	unsigned int *regSrc = (unsigned int *)instruction->regSrc;
+	
+	if(instruction->isImm)
+		*regDest = *regDest ^ instruction->imm;
+	else
+		*regDest = *regDest ^ *regSrc;
 }
 
 void opcode_nop(VM *vm, struct _Instruction *instruction)

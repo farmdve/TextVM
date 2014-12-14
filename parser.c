@@ -3,10 +3,47 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <string.h>
+
 #include <ctype.h>
 
 #include "vm.h"
+
+
+struct instruction_table ins_table[] = {
+	{MOV_INSTRUCTION, "mov", opcode_mov},
+	{ADD_INSTRUCTION, "add", opcode_add},
+	{SUB_INSTRUCTION, "sub", opcode_sub},
+	{DIV_INSTRUCTION, "div", opcode_div},
+	{XOR_INSTRUCTION, "xor", opcode_xor},	
+	{0, 0, 0}
+};
+
+struct register_table reg_table[] = {
+	{REG_EAX, "eax", 4, 0},
+	{REG_ECX, "ecx", 4, 0},
+	{REG_EDX, "edx", 4, 0},
+	{REG_EBX, "ebx", 4, 0},
+	{REG_ESP, "esp", 4, 0},
+	{REG_EBP, "ebp", 4, 0},
+	{REG_ESI, "esi", 4, 0},
+	{REG_EDI, "edi", 4, 0},
+	{REG_AX, "ax", 2, 0},
+	{REG_CX, "cx", 2, 0},
+	{REG_DX, "dx", 2, 0},
+	{REG_BX, "bx", 2, 0},
+	{REG_BP, "bp", 2, 0},
+	{REG_SI, "si", 2, 0},
+	{REG_DI, "di", 2, 0},
+	{REG_AL, "al", 2, 0},
+	{REG_CL, "cl", 2, 0},
+	{REG_DL, "dl", 2, 0},
+	{REG_BL, "bl", 2, 0},
+	{REG_AH, "ah", 2, 0},
+	{REG_CH, "ch", 2, 0},
+	{REG_DH, "dh", 2, 0},
+	{REG_BH, "bh", 2, 0},	
+	{0, 0, 0, 0}
+};
 
 int INS_op(VM *vm, char *buf, int instr)
 {
@@ -25,44 +62,18 @@ int INS_op(VM *vm, char *buf, int instr)
 		}		
 	}
 	
-	if(strcmp(temp, "mov") == 0)
+	struct instruction_table *pins_table;
+	for(pins_table = ins_table; pins_table->ins; pins_table++)
 	{
-		type = MOV_INSTRUCTION;
-		vm->instruction[instr].handler = &opcode_mov;
+		if(strcasecmp(temp, pins_table->ins) == 0)
+		{
+			type = pins_table->type;
+			vm->instruction[instr].type = pins_table->type;
+			vm->instruction[instr].handler = pins_table->opcode;
+			
+			break;
+		}		
 	}
-		
-	if(strcmp(temp, "add") == 0)
-	{
-		type = ADD_INSTRUCTION;
-		vm->instruction[instr].handler = &opcode_add;
-	}
-		
-	if(strcmp(temp, "sub") == 0)
-	{
-		type = SUB_INSTRUCTION;
-		vm->instruction[instr].handler = &opcode_sub;
-	}
-		
-	if(strcmp(temp, "div") == 0)
-	{
-		type = DIV_INSTRUCTION;
-		vm->instruction[instr].handler = &opcode_div;
-	}
-
-	if(strcmp(temp, "mul") == 0)
-	{
-		type = MUL_INSTRUCTION;
-		vm->instruction[instr].handler = &opcode_mov;
-	}
-	
-	if(strcmp(temp, "nop") == 0)
-	{
-		type = NOP_INSTRUCTION;
-		vm->instruction[instr].handler = &opcode_nop;
-	}	
-
-	
-	vm->instruction[instr].type = type;
 	
 	if(type < 0) // unknown instruction
 		vm->instruction[instr].handler = &opcode_nop;
@@ -76,100 +87,106 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 	
 	if(pass == 1)
 	{
+		
+		
 		if(strstr(buf, "["))
+		{
+			if(strstr(buf, "dword"))
+				vm->instruction[instr].size = 4;
+			else if(strstr(buf, "word"))
+				vm->instruction[instr].size = 2;
+			else if(strstr(buf, "byte"))
+				vm->instruction[instr].size = 1;
+			else
+				vm->instruction[instr].size = 4;
+				
 			vm->instruction[instr].isPointerDest = true;
+		}
 
-		if(strcmp(buf, "eax") == 0)
+		if(strcasecmp(buf, "eax") == 0)
 		{
 			regmod = REG_EAX;
 			vm->instruction[instr].regDest = &vm->regs.EAX;
-		}
-			
-		if(strcmp(buf, "ecx") == 0)
+		}	
+		else if(strcasecmp(buf, "ecx") == 0)
 		{
 			regmod = REG_ECX;
 			vm->instruction[instr].regDest = &vm->regs.ECX;
-		}
-			
-		if(strcmp(buf, "edx") == 0)
+		}		
+		else if(strcasecmp(buf, "edx") == 0)
 		{
 			regmod = REG_EDX;
 			vm->instruction[instr].regDest = &vm->regs.EDX;
-		}
-			
-		if(strcmp(buf, "ebx") == 0)
+		}	
+		else if(strcasecmp(buf, "ebx") == 0)
 		{
 			regmod = REG_EBX;
 			vm->instruction[instr].regDest = &vm->regs.EBX;
-		}
-			
-		if(strcmp(buf, "esp") == 0)
+		}		
+		else if(strcasecmp(buf, "esp") == 0)
 		{
 			regmod = REG_ESP;
 			vm->instruction[instr].regDest = &vm->regs.ESP;
 		}
-
-		if(strcmp(buf, "ebp") == 0)
+		else if(strcasecmp(buf, "ebp") == 0)
 		{
 			regmod = REG_EBP;
 			vm->instruction[instr].regDest = &vm->regs.EBP;
 		}
-
-		if(strcmp(buf, "esi") == 0)
+		else if(strcasecmp(buf, "esi") == 0)
 		{
 			regmod = REG_ESI;
 			vm->instruction[instr].regDest = &vm->regs.ESI;
 		}
-
-		if(strcmp(buf, "edi") == 0)
+		else if(strcasecmp(buf, "edi") == 0)
 		{
 			regmod = REG_EDI;
 			vm->instruction[instr].regDest = &vm->regs.EDI;
 		}
+		
+		if(strcasecmp(buf, "ax") == 0)
+			regmod = REG_AX;
 			
-		if(strcmp(buf, "ax") == 0)
-			regmod = REG_AX;	
-			
-		if(strcmp(buf, "cx") == 0)
+		if(strcasecmp(buf, "cx") == 0)
 			regmod = REG_CX;	
 			
-		if(strcmp(buf, "dx") == 0)
+		if(strcasecmp(buf, "dx") == 0)
 			regmod = REG_DX;	
 			
-		if(strcmp(buf, "bx") == 0)
+		if(strcasecmp(buf, "bx") == 0)
 			regmod = REG_BX;			
 
-		if(strcmp(buf, "bp") == 0)
+		if(strcasecmp(buf, "bp") == 0)
 			regmod = REG_BP;
 
-		if(strcmp(buf, "si") == 0)
+		if(strcasecmp(buf, "si") == 0)
 			regmod = REG_SI;
 
-		if(strcmp(buf, "di") == 0)
+		if(strcasecmp(buf, "di") == 0)
 			regmod = REG_DI;			
 
-		if(strcmp(buf, "al") == 0)
+		if(strcasecmp(buf, "al") == 0)
 			regmod = REG_AL;	
 			
-		if(strcmp(buf, "cl") == 0)
+		if(strcasecmp(buf, "cl") == 0)
 			regmod = REG_CL;	
 			
-		if(strcmp(buf, "dl") == 0)
+		if(strcasecmp(buf, "dl") == 0)
 			regmod = REG_DL;	
 			
-		if(strcmp(buf, "bl") == 0)
+		if(strcasecmp(buf, "bl") == 0)
 			regmod = REG_BL;
 
-		if(strcmp(buf, "ah") == 0)
+		if(strcasecmp(buf, "ah") == 0)
 			regmod = REG_AH;	
 			
-		if(strcmp(buf, "ch") == 0)
+		if(strcasecmp(buf, "ch") == 0)
 			regmod = REG_CH;	
 			
-		if(strcmp(buf, "dh") == 0)
+		if(strcasecmp(buf, "dh") == 0)
 			regmod = REG_DH;	
 			
-		if(strcmp(buf, "bh") == 0)
+		if(strcasecmp(buf, "bh") == 0)
 			regmod = REG_BH;
 			
 		vm->instruction[instr].regmodDest = regmod;	
@@ -177,100 +194,111 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 	else if(pass == 2)
 	{
 		if(strstr(buf, "["))
+		{
+			if(strstr(buf, "dword"))
+				vm->instruction[instr].size = 4;
+			else if(strstr(buf, "word"))
+				vm->instruction[instr].size = 2;
+			else if(strstr(buf, "byte"))
+				vm->instruction[instr].size = 1;
+			else
+				vm->instruction[instr].size = 4;
+				
 			vm->instruction[instr].isPointerSrc = true;
+		}
 			
 
-		if(strcmp(buf, "eax") == 0)
+		if(strcasecmp(buf, "eax") == 0)
 		{
 			regmod = REG_EAX;
 			vm->instruction[instr].regSrc = &vm->regs.EAX;
 		}
 			
-		if(strcmp(buf, "ecx") == 0)
+		if(strcasecmp(buf, "ecx") == 0)
 		{
 			regmod = REG_ECX;
 			vm->instruction[instr].regSrc = &vm->regs.ECX;
 		}
 			
-		if(strcmp(buf, "edx") == 0)
+		if(strcasecmp(buf, "edx") == 0)
 		{
 			regmod = REG_EDX;
 			vm->instruction[instr].regSrc = &vm->regs.EDX;
 		}
 			
-		if(strcmp(buf, "ebx") == 0)
+		if(strcasecmp(buf, "ebx") == 0)
 		{
 			regmod = REG_EBX;
 			vm->instruction[instr].regSrc = &vm->regs.EBX;
 		}
 			
-		if(strcmp(buf, "esp") == 0)
+		if(strcasecmp(buf, "esp") == 0)
 		{
 			regmod = REG_ESP;
 			vm->instruction[instr].regSrc = &vm->regs.ESP;
 		}
 
-		if(strcmp(buf, "ebp") == 0)
+		if(strcasecmp(buf, "ebp") == 0)
 		{
 			regmod = REG_EBP;
 			vm->instruction[instr].regSrc = &vm->regs.EBP;
 		}
 
-		if(strcmp(buf, "esi") == 0)
+		if(strcasecmp(buf, "esi") == 0)
 		{
 			regmod = REG_ESI;
 			vm->instruction[instr].regSrc = &vm->regs.ESI;
 		}
 
-		if(strcmp(buf, "edi") == 0)
+		if(strcasecmp(buf, "edi") == 0)
 		{
 			regmod = REG_EDI;
 			vm->instruction[instr].regSrc = &vm->regs.EDI;
 		}
 		
-		if(strcmp(buf, "ax") == 0)
+		if(strcasecmp(buf, "ax") == 0)
 			regmod = REG_AX;	
 			
-		if(strcmp(buf, "cx") == 0)
+		if(strcasecmp(buf, "cx") == 0)
 			regmod = REG_CX;	
 			
-		if(strcmp(buf, "dx") == 0)
+		if(strcasecmp(buf, "dx") == 0)
 			regmod = REG_DX;	
 			
-		if(strcmp(buf, "bx") == 0)
+		if(strcasecmp(buf, "bx") == 0)
 			regmod = REG_BX;			
 
-		if(strcmp(buf, "bp") == 0)
+		if(strcasecmp(buf, "bp") == 0)
 			regmod = REG_BP;
 
-		if(strcmp(buf, "si") == 0)
+		if(strcasecmp(buf, "si") == 0)
 			regmod = REG_SI;
 
-		if(strcmp(buf, "di") == 0)
+		if(strcasecmp(buf, "di") == 0)
 			regmod = REG_DI;			
 
-		if(strcmp(buf, "al") == 0)
+		if(strcasecmp(buf, "al") == 0)
 			regmod = REG_AL;	
 			
-		if(strcmp(buf, "cl") == 0)
+		if(strcasecmp(buf, "cl") == 0)
 			regmod = REG_CL;	
 			
-		if(strcmp(buf, "dl") == 0)
+		if(strcasecmp(buf, "dl") == 0)
 			regmod = REG_DL;	
 			
-		if(strcmp(buf, "bl") == 0)
+		if(strcasecmp(buf, "bl") == 0)
 			regmod = REG_BL;
 
-		if(strcmp(buf, "ah") == 0)
+		if(strcasecmp(buf, "ah") == 0)
 			regmod = REG_AH;	
 			
-		if(strcmp(buf, "ch") == 0)
+		if(strcasecmp(buf, "ch") == 0)
 			regmod = REG_CH;	
 			
-		if(strcmp(buf, "dh") == 0)
+		if(strcasecmp(buf, "dh") == 0)
 			regmod = REG_DH;	
 			
-		if(strcmp(buf, "bh") == 0)
+		if(strcasecmp(buf, "bh") == 0)
 			regmod = REG_BH;
 			
 		vm->instruction[instr].regmodSrc = regmod;
@@ -285,18 +313,9 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 	}
 	else if(regmod < 0 && pass == 2)
 	{
-		int sign = 0;
-		sscanf(buf, "%x", &sign);
-		if(sign < 0)
-		{
-			vm->instruction[instr].sign = true;
-			vm->instruction[instr].imm.s = strtol(buf, NULL, 16);
-		}
-		else
-		{
-			vm->instruction[instr].sign = false;
-			vm->instruction[instr].imm.u = strtoul(buf, NULL, 16);
-		}
+		unsigned int imm = 0;
+		sscanf(buf, "%x", &imm);
+		vm->instruction[instr].imm = imm;
 			
 		vm->instruction[instr].isImm = true;
 	
@@ -320,6 +339,21 @@ int countComma(const char *buf)
 	return c;
 }
 
+int countInstructions(VM *vm, char *ins)
+{
+	char *pch;
+	int c = 0;
+	
+	pch = strtok(ins, "\n");
+	while(pch)
+	{
+		c++;
+		pch = strtok(NULL, "\n");
+	}
+	
+	return c;
+}
+
 int INS_parse(VM *vm, const char *disasm)
 {
 	char buff1[100], buff2[100], **instruction;
@@ -329,12 +363,7 @@ int INS_parse(VM *vm, const char *disasm)
 	strcpy(buff1, disasm); //len check todo
 	strcpy(buff2, disasm);
 
-	pch = strtok(buff1, "\n");
-	while(pch)
-	{
-		vm->nInstructions++;
-		pch = strtok(NULL, "\n");
-	}
+	vm->nInstructions = countInstructions(vm, buff1);
 	
 	if(vm->nInstructions <= 0)
 		return -1;
@@ -355,16 +384,8 @@ int INS_parse(VM *vm, const char *disasm)
 	pch = strtok(buff2, "\n");
 	while(pch)
 	{
-		char buf[100];
-		int j = 0;
-		for(j = 0; j < strlen(pch); j++)
-		{
-			
-			buf[j] = (char)tolower((int)(pch[j]));
-		}
-		buf[j] = '\0';	
 		instruction[i] = malloc(strlen(pch) + 1);
-		strcpy(instruction[i], buf);		
+		strcpy(instruction[i], pch);		
 		i++;
 		pch = strtok(NULL, "\n");
 	}
