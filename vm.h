@@ -54,14 +54,10 @@ typedef struct _VMREGS {
 	unsigned int EBP;
 	unsigned int ESI;
 	unsigned int EDI;
-	
 	unsigned int EIP;
-
-
 } VMRegs;
 
 struct _Instruction {
-
 	int type;
 	int size;
 	unsigned int imm;
@@ -78,7 +74,6 @@ struct _Instruction {
 };
 
 struct instruction_table {
-
 	int type;
 	char *ins;
 	void (*opcode)();
@@ -86,7 +81,6 @@ struct instruction_table {
 };
 
 struct register_table {
-
 	int type;
 	char *reg;
 	int size;
