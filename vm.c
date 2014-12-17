@@ -11,7 +11,7 @@
 #include "vm.h"
 
 VM *vm;
-const char *inss = "mov eax,FFFFFF85\nadd eax,7a\nxor eax,5";
+const char *inss = "mov eax,0fffffff\nmov eax,fffffff0\nsub eax,5c";
 
 VM *VM_Init()
 {
@@ -22,6 +22,7 @@ VM *VM_Init()
 	memset(&vm->regs, 0, sizeof(VMRegs));
 		
 	vm->nInstructions = 0;
+	vm->regs.EFLAGS = 0x00000202;
 	
 	return vm;
 }
@@ -51,14 +52,15 @@ void VM_Execute(VM *vm)
 	for(int instr = 0; instr < vm->nInstructions; instr++)
 	{
 		vm->instruction[instr].handler(vm, &vm->instruction[instr]);
+		
+		printf("EAX %08x\n", vm->regs.EAX);
+		printf("ECX %08x\n", vm->regs.ECX);
+		printf("EDX %08x\n", vm->regs.EDX);
+		printf("EBX %08x\n", vm->regs.EBX);
+		printf("ESP %08x\n", vm->regs.ESP);
+		printf("EBP %08x\n\n", vm->regs.EBP);
+		printf("EFLAGS %08x\n\n", vm->regs.EFLAGS);		
 	}
-	
-	printf("EAX %08x,%lu,%d\n", vm->regs.EAX, vm->regs.EAX, vm->regs.EAX);
-	printf("ECX %08x\n", vm->regs.ECX);
-	printf("EDX %08x\n", vm->regs.EDX);
-	printf("EBX %08x\n", vm->regs.EBX);
-	printf("ESP %08x\n", vm->regs.ESP);
-	printf("EBP %08x\n", vm->regs.EBP);
 }
 
 int main(int argc, char **argv)

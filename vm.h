@@ -8,6 +8,11 @@
 
 #include <strings.h>
 
+#define FLAG_CLEAR(reg, flag) (*reg &= ~(1 << flag))
+#define FLAG_SET(reg, flag) (*reg |= (1 << flag))
+#define FLAG_CHECK(reg, flag) (reg & (1 << flag))
+#define SIGN_BIT 31
+
 enum {
 	NOP_INSTRUCTION = 0,
 	MOV_INSTRUCTION = 1,
@@ -45,6 +50,32 @@ enum {
 	REG_BL = 24
 };
 
+enum {
+	CF = 0,
+	PF = 2,
+	AF = 4,
+	ZF = 6,
+	SF = 7,
+	TF = 8,
+	DF = 10,
+	OF = 11
+};
+
+/*
+struct EFLAGS {
+
+	unsigned int CF:1;
+	unsigned int PF:1;
+	unsigned int AF:1;
+	unsigned int ZF:1;
+	unsigned int SF:1;
+	unsigned int TF:1;
+	unsigned int DF:1;
+	unsigned int OF:1;
+	unsigned int padding:24;
+}
+*/
+
 typedef struct _VMREGS {
 	unsigned int EAX;
 	unsigned int ECX;
@@ -55,6 +86,8 @@ typedef struct _VMREGS {
 	unsigned int ESI;
 	unsigned int EDI;
 	unsigned int EIP;
+	
+	unsigned int EFLAGS;
 } VMRegs;
 
 struct _Instruction {
