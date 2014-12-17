@@ -11,7 +11,7 @@
 #include "vm.h"
 
 VM *vm;
-const char *inss = "mov eax,0fffffff\nmov eax,fffffff0\nsub eax,5c";
+const char *inss = "mov eax,80000000\nadd eax,80000000\nsub eax,5c";
 
 VM *VM_Init()
 {
