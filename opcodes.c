@@ -7,7 +7,9 @@
 
 #include "vm.h"
 
-void opcode_mov(VM *vm, struct _Instruction *instruction)
+#define opcode(opcode) void opcode_##opcode(VM *vm, struct _Instruction *instruction)
+
+opcode(mov)
 {
 	unsigned int *regDest = (unsigned int *)instruction->regDest;
 	unsigned int *regSrc = (unsigned int *)instruction->regSrc;
@@ -22,7 +24,7 @@ void opcode_mov(VM *vm, struct _Instruction *instruction)
 	}
 }
 
-void opcode_add(VM *vm, struct _Instruction *instruction)
+opcode(add)
 {
 	unsigned int *regDest = (unsigned int *)instruction->regDest;
 	unsigned int *regSrc = (unsigned int *)instruction->regSrc;
@@ -59,7 +61,7 @@ void opcode_add(VM *vm, struct _Instruction *instruction)
 		
 	for(int i = 0; i < 32; i++)
 	{
-		if(FLAG_CHECK(sum, i)
+		if(FLAG_CHECK(sum, i))
 			bits_set++;
 	}
 	
@@ -73,6 +75,7 @@ void opcode_add(VM *vm, struct _Instruction *instruction)
 	{
 		if(!FLAG_CHECK(x2, SIGN_BIT) && !FLAG_CHECK(y2, SIGN_BIT))
 			FLAG_SET(&vm->regs.EFLAGS, OF);
+			
 		FLAG_SET(&vm->regs.EFLAGS, SF);	
 	}
 	else
@@ -84,12 +87,13 @@ void opcode_add(VM *vm, struct _Instruction *instruction)
 	*regDest = sum;
 }
 
-void opcode_sub(VM *vm, struct _Instruction *instruction)
+opcode(sub)
 {
 	unsigned int *regDest = (unsigned int *)instruction->regDest;
 	unsigned int *regSrc = (unsigned int *)instruction->regSrc;
 	unsigned int borrow = 0;
-	unsigned int sum = 0, x, y;
+	unsigned int sum = 0, x, y,  x2, y2;
+	unsigned int bits_set = 0;
 
 	if(instruction->isImm)
 		y = instruction->imm;
@@ -97,7 +101,8 @@ void opcode_sub(VM *vm, struct _Instruction *instruction)
 		y = *regSrc;
 		
 	x = *regDest;
-		
+	x2 = x;
+	y2 = y;		
 
 	sum = x ^ -y;
 	borrow = x & -y;
@@ -116,14 +121,35 @@ void opcode_sub(VM *vm, struct _Instruction *instruction)
 		FLAG_SET(&vm->regs.EFLAGS, ZF);
 	else
 		FLAG_CLEAR(&vm->regs.EFLAGS, ZF);
+		
+	for(int i = 0; i < 32; i++)
+	{
+		if(FLAG_CHECK(sum, i))
+			bits_set++;
+	}
+	
+	if(bits_set % 2)
+		FLAG_SET(&vm->regs.EFLAGS, PF);
+	else
+		FLAG_CLEAR(&vm->regs.EFLAGS, PF);		
 			
-	if(FLAG_CHECK(sum, SIGN_BIT))
-		FLAG_SET(&vm->regs.EFLAGS, SF);
+	bool sign = FLAG_CHECK(sum, SIGN_BIT);
+	if(sign)
+	{
+		if(!FLAG_CHECK(x2, SIGN_BIT) && !FLAG_CHECK(y2, SIGN_BIT))
+			FLAG_SET(&vm->regs.EFLAGS, OF);
 			
+		FLAG_SET(&vm->regs.EFLAGS, SF);	
+	}
+	else
+	{
+		if(FLAG_CHECK(x2, SIGN_BIT) && FLAG_CHECK(y2, SIGN_BIT))
+			FLAG_SET(&vm->regs.EFLAGS, OF);
+	}			
 	*regDest = sum;
 }
 
-void opcode_div(VM *vm, struct _Instruction *instruction)
+opcode(div)
 {
 	unsigned int *regDest = (unsigned int *)instruction->regDest;
 	//unsigned int *regSrc = (unsigned int *)instruction->regSrc;
@@ -133,18 +159,73 @@ void opcode_div(VM *vm, struct _Instruction *instruction)
 	//todo modify EFLAGS
 }
 
-void opcode_xor(VM *vm, struct _Instruction *instruction)
+opcode(mul)
 {
 	unsigned int *regDest = (unsigned int *)instruction->regDest;
 	unsigned int *regSrc = (unsigned int *)instruction->regSrc;
+	unsigned int sum = 0, x, y, x2, y2;
+	
+	if(instruction->isImm)
+		y = instruction->imm;
+	else
+		y = *regSrc;
+		
+	x = *regDest;
+	
+	//cheat
+	sum = x * y;
+	
+	if(((sum >> 16) & 0xFFFF) == 0)
+	{
+		FLAG_CLEAR(&vm->regs.EFLAGS, CF);
+		FLAG_CLEAR(&vm->regs.EFLAGS, OF);		
+	}
+	else
+	{
+		FLAG_SET(&vm->regs.EFLAGS, CF);
+		FLAG_SET(&vm->regs.EFLAGS, OF);			
+	}
+	
+	*regDest = sum;
+}
+
+opcode(xor)
+{
+	unsigned int *regDest = (unsigned int *)instruction->regDest;
+	unsigned int *regSrc = (unsigned int *)instruction->regSrc;
+	unsigned int sum = 0, bits_set = 0;
 	
 	if(instruction->isImm)
 		*regDest = *regDest ^ instruction->imm;
 	else
 		*regDest = *regDest ^ *regSrc;
+	
+	sum = *regDest;
+	
+	if(sum == 0)
+		FLAG_SET(&vm->regs.EFLAGS, ZF);
+	else
+		FLAG_CLEAR(&vm->regs.EFLAGS, ZF);
+			
+	if(FLAG_CHECK(sum, SIGN_BIT))
+		FLAG_SET(&vm->regs.EFLAGS, SF);
+		
+	for(int i = 0; i < 32; i++)
+	{
+		if(FLAG_CHECK(sum, i))
+			bits_set++;
+	}
+
+	if(bits_set % 2)
+		FLAG_SET(&vm->regs.EFLAGS, PF);
+	else
+		FLAG_CLEAR(&vm->regs.EFLAGS, PF);	
+		
+	FLAG_CLEAR(&vm->regs.EFLAGS, CF);
+	FLAG_CLEAR(&vm->regs.EFLAGS, OF);
 }
 
-void opcode_nop(VM *vm, struct _Instruction *instruction)
+opcode(nop)
 {
 	return;
 }

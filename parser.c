@@ -83,12 +83,11 @@ int INS_op(VM *vm, char *buf, int instr)
 
 int INS_Split(VM *vm, char *buf, int pass, int instr)
 {
+	struct register_table *pReg_table;
 	int regmod = -1;
 	
 	if(pass == 1)
-	{
-		
-		
+	{		
 		if(strstr(buf, "["))
 		{
 			if(strstr(buf, "dword"))
@@ -103,93 +102,15 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 			vm->instruction[instr].isPointerDest = true;
 		}
 
-		if(strcasecmp(buf, "eax") == 0)
+		for(pReg_table = reg_table; pReg_table->reg; pReg_table++)
 		{
-			regmod = REG_EAX;
-			vm->instruction[instr].regDest = &vm->regs.EAX;
-		}	
-		else if(strcasecmp(buf, "ecx") == 0)
-		{
-			regmod = REG_ECX;
-			vm->instruction[instr].regDest = &vm->regs.ECX;
-		}		
-		else if(strcasecmp(buf, "edx") == 0)
-		{
-			regmod = REG_EDX;
-			vm->instruction[instr].regDest = &vm->regs.EDX;
-		}	
-		else if(strcasecmp(buf, "ebx") == 0)
-		{
-			regmod = REG_EBX;
-			vm->instruction[instr].regDest = &vm->regs.EBX;
-		}		
-		else if(strcasecmp(buf, "esp") == 0)
-		{
-			regmod = REG_ESP;
-			vm->instruction[instr].regDest = &vm->regs.ESP;
+			if(strcasecmp(buf, pReg_table->reg) == 0)
+			{
+				vm->instruction[instr].regDest = pReg_table->pReg;
+				vm->instruction[instr].regmodDest = pReg_table->type;
+				break;
+			}		
 		}
-		else if(strcasecmp(buf, "ebp") == 0)
-		{
-			regmod = REG_EBP;
-			vm->instruction[instr].regDest = &vm->regs.EBP;
-		}
-		else if(strcasecmp(buf, "esi") == 0)
-		{
-			regmod = REG_ESI;
-			vm->instruction[instr].regDest = &vm->regs.ESI;
-		}
-		else if(strcasecmp(buf, "edi") == 0)
-		{
-			regmod = REG_EDI;
-			vm->instruction[instr].regDest = &vm->regs.EDI;
-		}
-		
-		if(strcasecmp(buf, "ax") == 0)
-			regmod = REG_AX;
-			
-		if(strcasecmp(buf, "cx") == 0)
-			regmod = REG_CX;	
-			
-		if(strcasecmp(buf, "dx") == 0)
-			regmod = REG_DX;	
-			
-		if(strcasecmp(buf, "bx") == 0)
-			regmod = REG_BX;			
-
-		if(strcasecmp(buf, "bp") == 0)
-			regmod = REG_BP;
-
-		if(strcasecmp(buf, "si") == 0)
-			regmod = REG_SI;
-
-		if(strcasecmp(buf, "di") == 0)
-			regmod = REG_DI;			
-
-		if(strcasecmp(buf, "al") == 0)
-			regmod = REG_AL;	
-			
-		if(strcasecmp(buf, "cl") == 0)
-			regmod = REG_CL;	
-			
-		if(strcasecmp(buf, "dl") == 0)
-			regmod = REG_DL;	
-			
-		if(strcasecmp(buf, "bl") == 0)
-			regmod = REG_BL;
-
-		if(strcasecmp(buf, "ah") == 0)
-			regmod = REG_AH;	
-			
-		if(strcasecmp(buf, "ch") == 0)
-			regmod = REG_CH;	
-			
-		if(strcasecmp(buf, "dh") == 0)
-			regmod = REG_DH;	
-			
-		if(strcasecmp(buf, "bh") == 0)
-			regmod = REG_BH;
-			
-		vm->instruction[instr].regmodDest = regmod;	
 	}
 	else if(pass == 2)
 	{
@@ -206,102 +127,16 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 				
 			vm->instruction[instr].isPointerSrc = true;
 		}
-			
-
-		if(strcasecmp(buf, "eax") == 0)
-		{
-			regmod = REG_EAX;
-			vm->instruction[instr].regSrc = &vm->regs.EAX;
-		}
-			
-		if(strcasecmp(buf, "ecx") == 0)
-		{
-			regmod = REG_ECX;
-			vm->instruction[instr].regSrc = &vm->regs.ECX;
-		}
-			
-		if(strcasecmp(buf, "edx") == 0)
-		{
-			regmod = REG_EDX;
-			vm->instruction[instr].regSrc = &vm->regs.EDX;
-		}
-			
-		if(strcasecmp(buf, "ebx") == 0)
-		{
-			regmod = REG_EBX;
-			vm->instruction[instr].regSrc = &vm->regs.EBX;
-		}
-			
-		if(strcasecmp(buf, "esp") == 0)
-		{
-			regmod = REG_ESP;
-			vm->instruction[instr].regSrc = &vm->regs.ESP;
-		}
-
-		if(strcasecmp(buf, "ebp") == 0)
-		{
-			regmod = REG_EBP;
-			vm->instruction[instr].regSrc = &vm->regs.EBP;
-		}
-
-		if(strcasecmp(buf, "esi") == 0)
-		{
-			regmod = REG_ESI;
-			vm->instruction[instr].regSrc = &vm->regs.ESI;
-		}
-
-		if(strcasecmp(buf, "edi") == 0)
-		{
-			regmod = REG_EDI;
-			vm->instruction[instr].regSrc = &vm->regs.EDI;
-		}
 		
-		if(strcasecmp(buf, "ax") == 0)
-			regmod = REG_AX;	
-			
-		if(strcasecmp(buf, "cx") == 0)
-			regmod = REG_CX;	
-			
-		if(strcasecmp(buf, "dx") == 0)
-			regmod = REG_DX;	
-			
-		if(strcasecmp(buf, "bx") == 0)
-			regmod = REG_BX;			
-
-		if(strcasecmp(buf, "bp") == 0)
-			regmod = REG_BP;
-
-		if(strcasecmp(buf, "si") == 0)
-			regmod = REG_SI;
-
-		if(strcasecmp(buf, "di") == 0)
-			regmod = REG_DI;			
-
-		if(strcasecmp(buf, "al") == 0)
-			regmod = REG_AL;	
-			
-		if(strcasecmp(buf, "cl") == 0)
-			regmod = REG_CL;	
-			
-		if(strcasecmp(buf, "dl") == 0)
-			regmod = REG_DL;	
-			
-		if(strcasecmp(buf, "bl") == 0)
-			regmod = REG_BL;
-
-		if(strcasecmp(buf, "ah") == 0)
-			regmod = REG_AH;	
-			
-		if(strcasecmp(buf, "ch") == 0)
-			regmod = REG_CH;	
-			
-		if(strcasecmp(buf, "dh") == 0)
-			regmod = REG_DH;	
-			
-		if(strcasecmp(buf, "bh") == 0)
-			regmod = REG_BH;
-			
-		vm->instruction[instr].regmodSrc = regmod;
+		for(pReg_table = reg_table; pReg_table->reg; pReg_table++)
+		{
+			if(strcasecmp(buf, pReg_table->reg) == 0)
+			{
+				vm->instruction[instr].regSrc = pReg_table->pReg;
+				vm->instruction[instr].regmodSrc = pReg_table->type;
+				break;
+			}		
+		}
 	}	
 	
 	if(regmod > 0)
@@ -380,6 +215,125 @@ int INS_parse(VM *vm, const char *disasm)
 	}
 	
 	instruction = calloc(vm->nInstructions, sizeof(char *));
+	
+	
+	for(int n = 0; n < sizeof(ins_table)/sizeof(struct instruction_table); n++)
+	{
+		if(strcasecmp(reg_table[n].reg, "eax") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EAX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "ecx") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.ECX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "edx") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EDX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "ebx") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EBX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "esp") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.ESP;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "ebp") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EBP;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "esi") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.ESI;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "edi") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EDI;
+		}
+		
+		else if(strcasecmp(reg_table[n].reg, "ax") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EAX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "cx") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.ECX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "dx") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EDX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "bx") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EBX;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "bp") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EBP;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "si") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.ESI;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "di") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EDI;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "al") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EAX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "cl") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.ECX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "dl") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EDX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "bl") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EBX;
+		}
+
+		else if(strcasecmp(reg_table[n].reg, "ah") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EAX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "ch") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.ECX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "dh") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EDX;
+		}
+			
+		else if(strcasecmp(reg_table[n].reg, "bh") == 0)
+		{
+			reg_table[n].pReg = &vm->regs.EBX;
+		}
+	}	
 
 	pch = strtok(buff2, "\n");
 	while(pch)
