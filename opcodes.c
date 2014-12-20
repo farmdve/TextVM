@@ -161,21 +161,21 @@ opcode(div)
 
 opcode(mul)
 {
-	unsigned int *regDest = (unsigned int *)instruction->regDest;
 	unsigned int *regSrc = (unsigned int *)instruction->regSrc;
-	unsigned int sum = 0, x, y, x2, y2;
+	unsigned long long int sum = 0, x, y, x2, y2;
 	
 	if(instruction->isImm)
-		y = instruction->imm;
-	else
-		y = *regSrc;
+		return; // mul never has any immediate value
 		
-	x = *regDest;
+	y = *regSrc;
+	
+	
+	x = vm->regs.EAX;
 	
 	//cheat
 	sum = x * y;
 	
-	if(((sum >> 16) & 0xFFFF) == 0)
+	if(((sum >> 32) & 0xFFFFFFFF) == 0)
 	{
 		FLAG_CLEAR(&vm->regs.EFLAGS, CF);
 		FLAG_CLEAR(&vm->regs.EFLAGS, OF);		
@@ -186,7 +186,9 @@ opcode(mul)
 		FLAG_SET(&vm->regs.EFLAGS, OF);			
 	}
 	
-	*regDest = sum;
+	vm->regs.EDX = (sum >> 32);
+	vm->regs.EAX = sum & 0xFFFFFFFF;
+
 }
 
 opcode(xor)

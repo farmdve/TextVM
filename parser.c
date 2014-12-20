@@ -14,7 +14,8 @@ struct instruction_table ins_table[] = {
 	{ADD_INSTRUCTION, "add", opcode_add},
 	{SUB_INSTRUCTION, "sub", opcode_sub},
 	{DIV_INSTRUCTION, "div", opcode_div},
-	{XOR_INSTRUCTION, "xor", opcode_xor},	
+	{XOR_INSTRUCTION, "xor", opcode_xor},
+	{MUL_INSTRUCTION, "mul", opcode_mul},	
 	{0, 0, 0}
 };
 
@@ -81,7 +82,7 @@ int INS_op(VM *vm, char *buf, int instr)
 	return len;
 }
 
-int INS_Split(VM *vm, char *buf, int pass, int instr)
+int INS_Split(VM *vm, char *buf, int pass, int c, int instr)
 {
 	struct register_table *pReg_table;
 	int regmod = -1;
@@ -106,7 +107,10 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 		{
 			if(strcasecmp(buf, pReg_table->reg) == 0)
 			{
-				vm->instruction[instr].regDest = pReg_table->pReg;
+				if(c > 0)
+					vm->instruction[instr].regDest = pReg_table->pReg;
+				else
+					vm->instruction[instr].regSrc = pReg_table->pReg;
 				vm->instruction[instr].regmodDest = pReg_table->type;
 				break;
 			}		
@@ -146,7 +150,7 @@ int INS_Split(VM *vm, char *buf, int pass, int instr)
 		if(pass == 1)
 			vm->instruction[instr].isRegisterDest = true;
 	}
-	else if(regmod < 0 && pass == 2)
+	else if(regmod < 0 && pass == 2 && c > 0)
 	{
 		unsigned int imm = 0;
 		sscanf(buf, "%x", &imm);
@@ -377,9 +381,8 @@ int INS_parse(VM *vm, const char *disasm)
 		int c = countComma(buf), pass = 1;
 		pch = strtok(temp, ",");
 		while(pch)
-		{
-			
-			int res = INS_Split(vm, pch, pass, i); // sanity checks todo
+		{		
+			int res = INS_Split(vm, pch, pass, c, i);
 			pch = strtok(NULL, ",");
 			pass++;
 		}
